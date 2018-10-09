@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/themes/css.css">
+    <script type="text/javascript" src="../../static/js/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $.ajax(
+                {
+                    url:'getAuthority',
+                    dataType:'JSON',
+                    type:'POST',
+                    success:function(data){
+                        for (var i = 0; i < data.length; i++) {
+                            var englishName = data[i].englishName;
+                            html = "<li><div class='header'><a class='label "+englishName+"' id='"+englishName+"' href='#'>"
+                                + data[i].resourceName + "</a></div></li>";
+                            $("#menu").append(html);
+                            $("#menu")
+                                .find("a")
+                                .off()
+                                .on(
+                                    "click",
+                                    function(event) {
+                                        var aId = this.id;
+                                        document.getElementById("mainFrame").src = "/"
+                                            + aId ;
+                                    });
+                        }
+                    },error:function () {
+
+                    }
+                }
+            )
+        });
+
+        function loginOut(){
+
+        };
+    </script>
+</head>
+
+
+<body>
+<div class="atop">
+    <div class="logo">
+        <div class="img-logo"></div>
+    </div>
+    <div class="welcome_r">
+        <ul>
+            <li class="ico_us"><span id="tiem"></span></li>
+            <li class="ico_zx"><a  onclick="loginOut()">注销</a></li>
+        </ul>
+    </div>
+</div>
+<div>
+    <div class="aleft">
+        <ul class="expmenu" id="menu">
+            <li>
+                <div>
+                    <span class="aico01">导航菜单</span>
+
+                </div>
+            </li>
+            <!-- <li><div class='header'><a class='label ismKonwledgeCategory' id='ismKonwledgeCategory' href='#'>知识库</a></div></li> -->
+        </ul>
+    </div>
+    <div >
+        <iframe id="mainFrame"  src="/goods/show" style="position:relative ; width: 100%; height: 200" ></iframe>
+
+    </div>
+
+</div>
+</body>
+</html>

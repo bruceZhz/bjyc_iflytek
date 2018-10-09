@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/themes/default/easyui.css">
+    <script type="text/javascript" src="../../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../../static/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // $('#imgURL').addEventListener('change', function() {
+            //     var t_files = this.files;
+            //     var str = '';
+            //     for(var i = 0, len = t_files.length; i < len; i++) {
+            //         console.log(t_files[i]);
+            //         console.log(t_files[i].type);
+            //     };
+            //
+            // }, false);
+
+
+            $("#goodsList").datagrid({
+                title: "商品信息列表",
+                width: 'auto',
+                height: 'auto',
+                url:'getGoodsInfo',
+                striped: true,
+                rownumbers: true,
+                singleSelect: false,
+                nowrap: true,
+                pagination: true,
+                toolbar : [ {
+                    text:"添加",
+                    iconCls : 'icon-flag_cn',
+                    handler : function() {
+                        saveGoodsInfo();
+                    }
+                }, '-', {
+                    text:"删除",
+                    iconCls : 'icon-help',
+                    handler : function() {
+                        delGoodsInfo();
+                    }
+                } ],
+                columns: [
+                    [
+
+                        {field: "id", title: "id", width: 100},
+                        {field: "goodsType", title: "商品类别", width: 100,
+                            formatter:function(value,rec){
+                                if(1==value){
+                                    return "香烟";
+                                }else if(0==value){
+                                    return "酒";
+                                }
+                            }},
+                        {field: "name", title: "商品名称", width: 100},
+                        {field: "price", title: "商品价格", width: 100},
+                        {field: "address", title: "商品所在地", width: 100},
+                        {field: "detail", title: "一句话卖点", width: 100},
+                        {field: "goodsNumber", title: "商品数量", width: 100},
+                        {field: "taste", title: "商品口味", width: 100},
+                        {field: "goodsDegree", title: "商品度数/焦油量", width: 100},
+                        {field:'opt',title:'操作',width:100,align:'center',
+                            formatter:function(value,rec){
+                                $('#goodsForm').form('load',{
+                                    goodsType:rec.goodsType,
+                                    name:rec.name,
+                                    price:rec.price,
+                                    address:rec.address,
+                                    detail:rec.detail,
+                                    goodsNumber:rec.goodsNumber,
+                                    id:rec.id,
+                                    taste:rec.taste,
+                                    goodsDegree:rec.goodsDegree
+                                });
+                                return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updateGoodsInfo()\">信息更新</a>"
+                                // return 111;
+                            }
+                        },
+                        {field:'Sale',title:'商品折扣',width:100,align:'center',
+                            formatter:function(value,rec){
+
+                                return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"sale("+rec.id+")\">信息更新</a>"
+                                // return 111;
+                            }
+                        },
+                        {field:'imgURL',title:'商品图片',width:100,align:'center',
+                            formatter:function(value,rec){
+                                if(value){
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updateImg("+rec.id+",'"+value+"')\">修改图片</a>"
+                                    // return "修改图片";
+                                }else{
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"addImg("+rec.id+")\">添加图片</a>"
+                                    // return "添加图片";
+                                }
+                                // return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"sale("+rec.id+")\">信息更新</a>"
+                                // return 111;
+                            }
+                        }
+                    ]
+                ]
+            });
+
+        });
+
+        function sale(goodID){
+            $.ajax(
+                {
+                    url:'getSaleInfo',
+                    dataType:'JSON',
+                    data:{"goodsID":goodID},
+                    type:'POST',
+                    success:function(data){
+                        $('#saleForm').form('load',{
+                            id:data.id,
+                            content:data.content,
+                            goodsID:data.goodID,
+                            saleDegree:data.saleDegree
+                        });
+                        $('#SaleInfoDialog').dialog('open');
+                    },error:function () {
+                        $('#SaleInfoDialog').dialog('open');
+                        $("#goodsID").val(goodID);
+                    }
+                }
+            )
+
+        }
+
+        function saleSave(){
+            if($("#saleID").val()){
+
+                $('#saleForm').form({
+                    url:'updateSaleInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#goodsList').datagrid('reload');
+                            saleClose();
+                        }
+                    }
+                });
+                $('#saleForm').submit();
+            }else{
+                $('#saleForm').form({
+                    url:'saveSaleInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#goodsList').datagrid('reload');
+                            saleClose();
+                        }
+                    }
+                });
+                $('#saleForm').submit();
+            }
+        }
+
+        function saleClose(){
+            $('#SaleInfoDialog').dialog('close');
+            $('#saleForm').form('reset');
+        }
+
+
+
+        function saveGoodsInfo(){
+            $('#GoodsInfoDialog').dialog('open');
+            $('#solid').val(0);
+            $('#id').val(0);
+        }
+
+        function delGoodsInfo(){
+            var row = $('#goodsList').datagrid('getSelections');
+            var ids = [];
+            for(var i=0 ;i<row.length ;i++){
+                ids.push(row[i].id);
+            }
+            $.ajax(
+                {
+                    url:'delGoodsInfo',
+                    dataType:'JSON',
+                    data:{"ids":ids.toString()},
+                    type:'POST',
+                    success:function(data){
+                        if (data.success){
+                            alert(data.content);
+                            $('#goodsList').datagrid('reload');
+                        }
+                    }
+                }
+            )
+
+        }
+
+        function updateGoodsInfo(){
+            $('#GoodsInfoDialog').dialog('open');
+            $('#solid').val(-1);
+        }
+
+        function save(){
+            var url = "";
+            var solide = $('#solid').val();
+            if(0==solide){
+                $('#goodsForm').form({
+                    url:'saveGoodsInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#goodsList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#goodsForm').submit();
+            }else{
+                $('#goodsForm').form({
+                    url:'updateGoodsInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#goodsList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#goodsForm').submit();
+            }
+        }
+
+        function close(){
+            $('#GoodsInfoDialog').dialog('close');
+            $('#goodsForm').form('reset');
+
+        }
+
+        function addImg(goodId){
+            $("#goodsImgDiv").hide();
+            $('#goodsImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+        }
+        
+        function updateImg(goodId,imgURL) {
+            $('#goodsImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+            $("#goodsImgDiv").show();
+            document.getElementById("goodsImgShow").src="../showimage.do?name="+imgURL;
+
+        }
+
+        function imgUpload(file) {
+
+            var t_files = file.files;
+
+            var str = '';
+            if(t_files.length==1){
+                var oFile = t_files[0];
+                // 限制文件类型
+                if(['jpeg', 'png', 'gif', 'jpg'].indexOf(oFile.type.split("/")[1]) < 0) {
+                    alert("仅可以上传图片格式文件");
+                    return;
+                }
+                var data=new FormData();
+                console.log(oFile);
+                data.append("pict",oFile);//这里不管怎样，我决定还是用formdata的方式上传。
+
+                $.ajax({
+                    type:'POST',
+                    url:'../uploadPic.do',
+                    data:data,
+                    contentType: false,    //这个一定要写
+                    processData: false,
+                    success:function(data){
+                        $("#imgURL").val(data);
+                        document.getElementById("goodsImgShow").src="../showimage.do?name="+data;
+                        $("#goodsImgDiv").show();
+                    }
+                });
+
+            }
+
+
+
+        }
+
+        function imgSave() {
+            $('#ImgForm').form({
+                url:'updateGoodsImg',
+                onSubmit: function(){
+
+                },
+                success:function(data){
+                    var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                    if (data.success){
+                        imgClose();
+                        $('#goodsList').datagrid('reload');
+                        alert(data.content);
+
+                    }
+                }
+            });
+            $('#ImgForm').submit();
+        }
+        
+        function imgClose() {
+            $('#ImgDialog').dialog('close');
+            $("#goodsImgDiv").hide();
+        }
+    </script>
+</head>
+<body>
+
+<table id="goodsList"></table>
+<div class="easyui-dialog" id="GoodsInfoDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#bb',modal:true,closed:true">
+    <form id="goodsForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >商品类别:</label>
+                </td>
+                <td>
+                    <select id="goodsType" class="easyui-combobox" name="goodsType" style="width:200px;">
+                        <option value="1">香烟</option>
+                        <option value="0">酒</option>
+                    </select>
+                    <input type="hidden" id="solid"/>
+                    <input type="hidden" id="id" name="id"/>
+                    <input type="hidden" id="haveBox" name="haveBox" value="1">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品名称:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="name" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品价格:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="price" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品口味:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="taste" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品出产地:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="address" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >度数/焦油量:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="goodsDegree" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品一句话简介:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="detail" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >商品数量:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="goodsNumber" data-options="required:true" />
+                </td>
+            </tr>
+
+        </table>
+    </form>
+
+</div>
+<div id="bb">
+    <a href="#" class="easyui-linkbutton" onclick="save()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="close()">Close</a>
+</div>
+
+<div class="easyui-dialog" id="SaleInfoDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#saleButton',modal:true,closed:true">
+    <form id="saleForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >商品现价:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="saleDegree" data-options="required:true" />
+                    <input type="hidden" id="goodsID" name="goodsID" />
+                    <input type="hidden" name="id" id="saleID">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >活动内容:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="content" data-options="required:true" />
+                </td>
+            </tr>
+
+        </table>
+    </form>
+
+</div>
+<div id="saleButton">
+    <a href="#" class="easyui-linkbutton" onclick="saleSave()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="saleClose()">Close</a>
+</div>
+
+<div class="easyui-dialog" id="ImgDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#imgButton',modal:true,closed:true">
+    <form id="ImgForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >选择图片:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox"  accept="image/*" type="file" onchange="imgUpload(this)"/>
+                    <input type="hidden" id="goodsImgID" name="goodsID" />
+                    <input type="hidden" id="imgURL" name="imgURL">
+                </td>
+            </tr>
+
+        </table>
+        <div id="goodsImgDiv" style="display: none" >
+            <img id="goodsImgShow" />
+        </div>
+    </form>
+
+</div>
+<div id="imgButton">
+    <a href="#" class="easyui-linkbutton" onclick="imgSave()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="imgClose()">Close</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/themes/default/easyui.css">
+    <script type="text/javascript" src="../../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../../static/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            $("#mapList").datagrid({
+                title: "地图信息列表",
+                width: 'auto',
+                height: 'auto',
+                url:'getMapInfo',
+                striped: true,
+                rownumbers: true,
+                singleSelect: false,
+                nowrap: true,
+                pagination: true,
+                toolbar : [ {
+                    text:"添加",
+                    iconCls : 'icon-flag_cn',
+                    handler : function() {
+                        savemapInfo();
+                    }
+                }, '-', {
+                    text:"删除",
+                    iconCls : 'icon-help',
+                    handler : function() {
+                        delmapInfo();
+                    }
+                } ],
+                columns: [
+                    [
+
+                        {field: "id", title: "id", width: 100},
+                        {field: "target", title: "目的地", width: 100},
+                        {field: "coordinateX", title: "X坐标", width: 100},
+                        {field: "coordinateY", title: "Y坐标", width: 100},
+                        {field: "angle", title: "角度", width: 100},
+                        {field:'opt',title: '操作',width:100,align:'center',
+                            formatter:function(value,rec){
+                                $('#mapForm').form('load',{
+                                    id:rec.id,
+                                    target:rec.target,
+                                    coordinateX:rec.coordinateX,
+                                    coordinateY:rec.coordinateY,
+                                    angle:rec.angle
+                                });
+                                return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updatemapInfo()\">信息更新</a>"
+                                // return 111;
+                            }
+                        },
+                        {field:'mapIMG',title:'商品图片',width:100,align:'center',
+                            formatter:function(value,rec){
+                                if(value){
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updateImg("+rec.id+",'"+value+"')\">修改图片</a>"
+                                    // return "修改图片";
+                                }else{
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"addImg("+rec.id+")\">添加图片</a>"
+                                    // return "添加图片";
+                                }
+                                // return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"sale("+rec.id+")\">信息更新</a>"
+                                // return 111;
+                            }
+                        }
+                    ]
+                ]
+            });
+
+        });
+
+
+        function savemapInfo(){
+            $('#mapInfoDialog').dialog('open');
+            $('#solid').val(0);
+            $('#id').val(0);
+        }
+
+        function delmapInfo(){
+            var row = $('#mapList').datagrid('getSelections');
+            var ids = [];
+            for(var i=0 ;i<row.length ;i++){
+                ids.push(row[i].id);
+            }
+            $.ajax(
+                {
+                    url:'delMapInfo',
+                    dataType:'JSON',
+                    data:{"ids":ids.toString()},
+                    type:'POST',
+                    success:function(data){
+                        if (data.success){
+                            alert(data.content);
+                            $('#mapList').datagrid('reload');
+                        }
+                    }
+                }
+            )
+
+        }
+
+        function updatemapInfo(){
+            $('#mapInfoDialog').dialog('open');
+            $('#solid').val(-1);
+        }
+
+        function save(){
+            var url = "";
+            var solide = $('#solid').val();
+            if(0==solide){
+                $('#mapForm').form({
+                    url:'updateMapInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#mapList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#mapForm').submit();
+            }else{
+                $('#mapForm').form({
+                    url:'saveMapInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#mapList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#mapForm').submit();
+            }
+        }
+
+        function close(){
+            $('#mapInfoDialog').dialog('close');
+            $('#mapForm').form('reset');
+
+        }
+
+        function addImg(goodId){
+            $("#mapImgDiv").hide();
+            $('#mapImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+        }
+
+        function updateImg(goodId,imgURL) {
+            $('#mapImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+            $("#mapImgDiv").show();
+            document.getElementById("mapImgShow").src="../showimage.do?name="+imgURL;
+
+        }
+
+        function imgUpload(file) {
+
+            var t_files = file.files;
+
+            var str = '';
+            if(t_files.length==1){
+                var oFile = t_files[0];
+                // 限制文件类型
+                if(['jpeg', 'png', 'gif', 'jpg'].indexOf(oFile.type.split("/")[1]) < 0) {
+                    alert("仅可以上传图片格式文件");
+                    return;
+                }
+                var data=new FormData();
+                console.log(oFile);
+                data.append("pict",oFile);//这里不管怎样，我决定还是用formdata的方式上传。
+
+                $.ajax({
+                    type:'POST',
+                    url:'../uploadPic.do',
+                    data:data,
+                    contentType: false,    //这个一定要写
+                    processData: false,
+                    success:function(data){
+                        $("#imgURL").val(data);
+                        document.getElementById("mapImgShow").src="../showimage.do?name="+data;
+                        $("#mapImgDiv").show();
+                    }
+                });
+
+            }
+
+
+
+        }
+
+        function imgSave() {
+            $('#ImgForm').form({
+                url:'updateMapImg',
+                onSubmit: function(){
+
+                },
+                success:function(data){
+                    var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                    if (data.success){
+                        imgClose();
+                        $('#mapList').datagrid('reload');
+                        alert(data.content);
+
+                    }
+                }
+            });
+            $('#ImgForm').submit();
+        }
+
+        function imgClose() {
+            $('#ImgDialog').dialog('close');
+            $("#mapImgDiv").hide();
+        }
+    </script>
+</head>
+<body>
+<table id="mapList"></table>
+<div class="easyui-dialog" id="mapInfoDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#bb',modal:true,closed:true">
+    <form id="mapForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >目的地:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="target" data-options="required:true" />
+                    <input type="hidden" id="id" >
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >X坐标:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="coordinateX" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >Y坐标:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="coordinateY" data-options="required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label >角度:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="angle" data-options="required:true" />
+                </td>
+            </tr>
+        </table>
+    </form>
+
+</div>
+<div id="bb">
+    <a href="#" class="easyui-linkbutton" onclick="save()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="close()">Close</a>
+</div>
+
+<div class="easyui-dialog" id="ImgDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#imgButton',modal:true,closed:true">
+    <form id="ImgForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >选择图片:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox"  accept="image/*" type="file" onchange="imgUpload(this)"/>
+                    <input type="hidden" id="mapImgID" name="mapID" />
+                    <input type="hidden" id="imgURL" name="imgURL">
+                </td>
+            </tr>
+
+        </table>
+        <div id="mapImgDiv" style="display: none" >
+            <img id="mapImgShow" />
+        </div>
+    </form>
+
+</div>
+<div id="imgButton">
+    <a href="#" class="easyui-linkbutton" onclick="imgSave()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="imgClose()">Close</a>
+</div>
+</body>
+</html>

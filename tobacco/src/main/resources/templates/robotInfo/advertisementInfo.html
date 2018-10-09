@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/themes/default/easyui.css">
+    <script type="text/javascript" src="../../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../../static/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // $('#imgURL').addEventListener('change', function() {
+            //     var t_files = this.files;
+            //     var str = '';
+            //     for(var i = 0, len = t_files.length; i < len; i++) {
+            //         console.log(t_files[i]);
+            //         console.log(t_files[i].type);
+            //     };
+            //
+            // }, false);
+
+
+            $("#advertisementList").datagrid({
+                title: "商品信息列表",
+                width: 'auto',
+                height: 'auto',
+                url:'getAdvertisementInfo',
+                striped: true,
+                rownumbers: true,
+                singleSelect: false,
+                nowrap: true,
+                pagination: true,
+                toolbar : [ {
+                    text:"添加",
+                    iconCls : 'icon-flag_cn',
+                    handler : function() {
+                        saveadvertisementInfo();
+                    }
+                }, '-', {
+                    text:"删除",
+                    iconCls : 'icon-help',
+                    handler : function() {
+                        deladvertisementInfo();
+                    }
+                } ],
+                columns: [
+                    [
+                        {field: "id", title: "宣传id", width: 100},
+                        {field: "title", title: "宣传标题", width: 100},
+                        {field: "content", title: "宣传内容", width: 100},
+                        {field:'opt',title:'操作',width:100,align:'center',
+                            formatter:function(value,rec){
+                                $('#advertisementForm').form('load',{
+                                    id:rec.id,
+                                    title:rec.title,
+                                    content:rec.content
+                                });
+                                return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updateadvertisementInfo()\">信息更新</a>"
+                                // return 111;
+                            }
+                        },
+                        {field:'vidoURL',title:'商品图片',width:100,align:'center',
+                            formatter:function(value,rec){
+                                if(value){
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"updateImg("+rec.id+",'"+value+"')\">修改视屏</a>"
+                                    // return "修改图片";
+                                }else{
+                                    return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"addImg("+rec.id+")\">添加视屏</a>"
+                                    // return "添加图片";
+                                }
+                                // return "<a href=\"#\" class=\"easyui-linkbutton\" onclick=\"sale("+rec.id+")\">信息更新</a>"
+                                // return 111;
+                            }
+                        }
+                    ]
+                ]
+            });
+
+        });
+
+        function saveadvertisementInfo(){
+            $('#advertisementInfoDialog').dialog('open');
+            $('#solid').val(0);
+            $('#id').val(0);
+        }
+
+        function deladvertisementInfo(){
+            var row = $('#advertisementList').datagrid('getSelections');
+            var ids = [];
+            for(var i=0 ;i<row.length ;i++){
+                ids.push(row[i].id);
+            }
+            $.ajax(
+                {
+                    url:'delAdvertisementInfo',
+                    dataType:'JSON',
+                    data:{"ids":ids.toString()},
+                    type:'POST',
+                    success:function(data){
+                        if (data.success){
+                            alert(data.content);
+                            $('#advertisementList').datagrid('reload');
+                        }
+                    }
+                }
+            )
+
+        }
+
+        function updateadvertisementInfo(){
+            $('#advertisementInfoDialog').dialog('open');
+            $('#solid').val(-1);
+        }
+
+        function save(){
+            var url = "";
+            var solide = $('#solid').val();
+            if(0==solide){
+                $('#advertisementForm').form({
+                    url:'saveAdvertisementInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#advertisementList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#advertisementForm').submit();
+            }else{
+                $('#advertisementForm').form({
+                    url:'updateAdvertisementInfo',
+                    onSubmit: function(){
+
+                    },
+                    success:function(data){
+                        var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                        if (data.success){
+                            alert(data.content)
+                            $('#advertisementList').datagrid('reload');
+                            close();
+                        }
+                    }
+                });
+                $('#advertisementForm').submit();
+            }
+        }
+
+        function close(){
+            $('#advertisementInfoDialog').dialog('close');
+            $('#advertisementForm').form('reset');
+
+        }
+
+        function addImg(goodId){
+            $("#advertisementImgDiv").hide();
+            $('#advertisementImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+        }
+
+        function updateImg(goodId,imgURL) {
+            $('#advertisementImgID').val(goodId);
+            $('#ImgDialog').dialog('open');
+            $("#advertisementImgDiv").show();
+            document.getElementById("advertisementImgShow").src="../showimage.do?name="+imgURL;
+
+        }
+
+        function imgUpload(file) {
+
+            var t_files = file.files;
+
+            var str = '';
+            if(t_files.length==1){
+                var oFile = t_files[0];
+                // 限制文件类型
+                if(['mp4'].indexOf(oFile.type.split("/")[1]) < 0) {
+                    alert("仅可以上传mp4格式文件");
+                    return;
+                }
+                var data=new FormData();
+                console.log(oFile);
+                data.append("pict",oFile);//这里不管怎样，我决定还是用formdata的方式上传。
+
+                $.ajax({
+                    type:'POST',
+                    url:'../uploadVido.do',
+                    data:data,
+                    contentType: false,    //这个一定要写
+                    processData: false,
+                    success:function(data){
+                        $("#imgURL").val(data);
+                        document.getElementById("v1").src="../showimage.do?name="+data;
+                        document.getElementById("media").load();
+                        // document.getElementById("advertisementImgShow").src="../showimage.do?name="+data;
+                        $("#advertisementImgDiv").show();
+                    }
+                });
+
+            }
+
+
+
+        }
+
+        function imgSave() {
+            $('#ImgForm').form({
+                url:'updateAdvertisementImg',
+                onSubmit: function(){
+
+                },
+                success:function(data){
+                    var data = eval('(' + data + ')'); // change the JSON string to javascript object
+                    if (data.success){
+                        imgClose();
+                        $('#advertisementList').datagrid('reload');
+                        alert(data.content);
+
+                    }
+                }
+            });
+            $('#ImgForm').submit();
+        }
+
+        function imgClose() {
+            $('#ImgDialog').dialog('close');
+            $("#advertisementImgDiv").hide();
+        }
+    </script>
+</head>
+<body>
+<table id="advertisementList"></table>
+<div class="easyui-dialog" id="advertisementInfoDialog" style="width:600px;height:300px"
+     data-options="title:'My Dialog',buttons:'#bb',modal:true,closed:true">
+    <form id="advertisementForm" method="post">
+        <table>
+
+            <tr>
+                <td>
+                    <label >宣传标题:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="title" data-options="required:true" />
+                    <input type="hidden" id="solid"/>
+                    <input type="hidden" id="id" name="id"/>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label >宣传内容:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox" type="text" name="content" data-options="required:true" />
+                </td>
+            </tr>
+
+        </table>
+    </form>
+
+</div>
+<div id="bb">
+    <a href="#" class="easyui-linkbutton" onclick="save()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="close()">Close</a>
+</div>
+
+
+<div class="easyui-dialog" id="ImgDialog" style="width:1000px;height:700px"
+     data-options="title:'My Dialog',buttons:'#imgButton',modal:true,closed:true">
+    <form id="ImgForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <label >选择图片:</label>
+                </td>
+                <td>
+                    <input class="easyui-validatebox"  accept="video/*" type="file" onchange="imgUpload(this)"/>
+                    <input type="hidden" id="advertisementImgID" name="id" />
+                    <input type="hidden" id="imgURL" name="vidoURL">
+                </td>
+            </tr>
+
+        </table>
+        <div id="advertisementImgDiv" style="display: none" >
+            <video id="media" width="500px" height="400px" controls>
+                <source id="v1" src="">
+            </video>
+        </div>
+    </form>
+
+</div>
+<div id="imgButton">
+    <a href="#" class="easyui-linkbutton" onclick="imgSave()">Save</a>
+    <a href="#" class="easyui-linkbutton" onclick="imgClose()">Close</a>
+</div>
+</body>
+</html>
