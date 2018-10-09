@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">烟草机器人</string>
+
+    <string name="rcg_params">extend_params={"\"params\"":"\"eos=30000,bos=30000\""},appid=ycj00000,url=36.7.172.16:5105,svc=iat,auf=audio/L16;rate=16000,aue=raw,type=1,uid=660Y5r,multiPcm=true</string>
+    <string name="tts_params">engine_type=cloud,svc=tts,uid=65040,aue=raw,vid=60020,url=36.7.172.16:5105,appid=ycj00000,auf=4,output=pcm</string>
+
+</resources>

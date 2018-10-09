@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/btn_law"
+        android:layout_width="300dp"
+        android:layout_height="150dp"
+        android:background="@drawable/main_btn_bg"
+        android:text="法律法规"
+        android:textColor="#ffffff"
+        android:textSize="28sp" />
+
+    <Button
+        android:id="@+id/btn_newest"
+        android:layout_width="300dp"
+        android:layout_height="150dp"
+        android:layout_marginLeft="100dp"
+        android:background="@drawable/main_btn_bg"
+        android:text="最新宣传"
+        android:textColor="#ffffff"
+        android:textSize="28sp" />
+
+    <Button
+        android:id="@+id/btn_address"
+        android:layout_width="300dp"
+        android:layout_height="150dp"
+        android:layout_marginLeft="100dp"
+        android:background="@drawable/main_btn_bg"
+        android:text="营业厅地址"
+        android:textColor="#ffffff"
+        android:textSize="28sp" />
+</LinearLayout>

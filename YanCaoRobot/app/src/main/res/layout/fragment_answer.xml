@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/answer_bg"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/ll_left"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="58"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_logo"
+            android:layout_width="320dp"
+            android:layout_height="320dp"
+            android:layout_marginTop="80dp"
+            android:src="@drawable/img_default" />
+
+        <LinearLayout
+            android:id="@+id/ll_goods"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/goods_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:text="商品名称：中华烟"
+                android:textColor="#4b280b"
+                android:textSize="36sp" />
+
+            <TextView
+                android:id="@+id/goods_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="商品价格：538"
+                android:textColor="#4b280b"
+                android:textSize="36sp" />
+
+            <TextView
+                android:id="@+id/goods_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="商品产地：52度"
+                android:textColor="#4b280b"
+                android:textSize="36sp" />
+
+            <TextView
+                android:id="@+id/goods_promotions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="促销信息：7折"
+                android:textColor="#4b280b"
+                android:textSize="36sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_company"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:text="中国北京烟草公司"
+                android:textColor="#4b280b"
+                android:textSize="36sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_right"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="134"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_marginLeft="125dp"
+            android:layout_marginTop="120dp"
+            android:layout_marginRight="100dp">
+
+            <TextView
+                android:id="@+id/tv_answer_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:lineSpacingMultiplier="1.2"
+                android:text=""
+                android:textColor="#4b280b"
+                android:textSize="32sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/ll_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_list_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="下面是所有的北京烟："
+                    android:textColor="#4b280b"
+                    android:textSize="32sp" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_answer_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="20dp" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>
