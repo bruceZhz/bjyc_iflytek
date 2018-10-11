@@ -265,6 +265,9 @@ public class AsrSingleton {
      * @param action
      */
     private void executeAction(int type, JSONObject action) {
+        if (action.isNull("type")){
+            return;
+        }
         int actionType = action.optInt("type"); //1.普通动作，2.路径规划
         if (actionType == 1) {
             RobotControl.executeAction(action.optInt("action"));
@@ -274,7 +277,7 @@ public class AsrSingleton {
                 float x = (float) address.getDouble("coordinateX");
                 float y = (float) address.getDouble("coordinateY");
                 float angle = (float) address.getDouble("angle");
-                WalkController.walk(x,y,angle);
+                WalkController.walk(x,y,angle,mTtsHelper);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.cms.yancao.RobotApplication;
+import com.robot.adapter.bean.RobotPose;
 
 import org.json.JSONObject;
 
@@ -46,6 +47,9 @@ public class Config {
         return sp.getString("location", "");
     }
 
+    public static RobotPose getHome() {
+        return new RobotPose(sp.getFloat("x",0),sp.getFloat("y",0),0,sp.getFloat("angle",0),0,0);
+    }
 
     public static void putConfig(JSONObject obj) {
         try {
@@ -64,7 +68,10 @@ public class Config {
 
             editor.putString("address", obj.optString("address"));
             editor.putString("location", obj.optString("location"));
-
+            JSONObject map = obj.getJSONObject("map");
+            editor.putFloat("x",(float) map.getDouble("coordinateX"));
+            editor.putFloat("y",(float) map.getDouble("coordinateY"));
+            editor.putFloat("angle",(float) map.getDouble("angle"));
             editor.commit();
         } catch (Exception e) {
             e.printStackTrace();
